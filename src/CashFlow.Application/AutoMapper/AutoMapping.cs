@@ -14,7 +14,7 @@ public class AutoMapping : Profile // Esta é a classe de configuração do Auto
 
     private void RequestToEntity() 
     {
-        CreateMap<RequestRegisterExpenseJson, Expense>();
+        CreateMap<RequestExpenseJson, Expense>();
            
     }
 

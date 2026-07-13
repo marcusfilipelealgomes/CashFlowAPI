@@ -1,4 +1,5 @@
-﻿using CashFlow.Application.UseCases.Expenses.Register;
+﻿using CashFlow.Application.UseCases.Expenses;
+using CashFlow.Application.UseCases.Expenses.Register;
 using CashFlow.Communication.Enums;
 using CashFlow.Communication.Requests;
 using CashFlow.Exception;
@@ -12,7 +13,7 @@ public class RegisterExpenseValidatorTests
     public void Sucess()
     {
         //Arrange
-        var validator = new RegisterExpenseValidator();
+        var validator = new ExpenseValidator();
         var request = RequestRegisterExpenseJsonBuilder.Build();   // Cria um objeto de request com dados válidos usando o builder
 
         //Act
@@ -31,7 +32,7 @@ public class RegisterExpenseValidatorTests
     public void Error_Tittle_Empty(string tittle)
     {
         //Arrange
-        var validator = new RegisterExpenseValidator();
+        var validator = new ExpenseValidator();
         var request = RequestRegisterExpenseJsonBuilder.Build();   // Cria um objeto de request com dados válidos usando o builder
         request.Title = tittle; // Define o título como vazio para simular um cenário de erro 
 
@@ -49,7 +50,7 @@ public class RegisterExpenseValidatorTests
     public void Error_Date_Futurey()
     {
         //Arrange
-        var validator = new RegisterExpenseValidator();
+        var validator = new ExpenseValidator();
         var request = RequestRegisterExpenseJsonBuilder.Build();   // Cria um objeto de request com dados válidos usando o builder
         request.Date = DateTime.UtcNow.AddDays(1); // Define a data como uma data futura para simular um cenário de erro
 
@@ -67,7 +68,7 @@ public class RegisterExpenseValidatorTests
     public void Error_Payment_Type_Invalid()
     {
         //Arrange
-        var validator = new RegisterExpenseValidator();
+        var validator = new ExpenseValidator();
         var request = RequestRegisterExpenseJsonBuilder.Build();   // Cria um objeto de request com dados válidos usando o builder
         request.PaymentType = (PaymentType)700; // Define o tipo de pagamento como um valor inválido para simular um cenário de erro
 
@@ -89,7 +90,7 @@ public class RegisterExpenseValidatorTests
     public void Error_Amount_Invalid(decimal amount)
     {
         //Arrange
-        var validator = new RegisterExpenseValidator();
+        var validator = new ExpenseValidator();
         var request = RequestRegisterExpenseJsonBuilder.Build();   // Cria um objeto de request com dados válidos usando o builder
         request.Amount = amount; // Define a data como uma data futura para simular um cenário de erro
 

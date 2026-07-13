@@ -6,10 +6,10 @@ using System.Security.Cryptography.X509Certificates;
 namespace CommonTestUtilities.Request;
 public class RequestRegisterExpenseJsonBuilder
 {
-    public static  RequestRegisterExpenseJson Build()
+    public static  RequestExpenseJson Build()
         {
 
-        return new Faker<RequestRegisterExpenseJson>()
+        return new Faker<RequestExpenseJson>()
             .RuleFor(r => r.Title, f => f.Commerce.ProductName())
             .RuleFor(r => r.Amount, f => f.Random.Decimal(1, 1000)) // Gerar um valor decimal aleatório entre 1 e 1000 para o campo Amount
             .RuleFor(r => r.Description, f => f.Commerce.ProductDescription())
