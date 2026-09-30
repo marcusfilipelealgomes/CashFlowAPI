@@ -1,0 +1,83 @@
+<article class="stat stat--salary">
+  <header>
+    <span class="stat__icon"><span class="material-symbols-rounded">account_balance_wallet</span></span>
+    <span class="stat__label">Salário do mês</span>
+    @if (!editingSalary()) {
+      <button class="icon-btn" type="button" (click)="startSalaryEdit()" aria-label="Editar salário">
+        <span class="material-symbols-rounded">edit</span>
+      </button>
+    }
+  </header>
+
+  @if (editingSalary()) {
+    <form class="salary-form" (ngSubmit)="saveSalary()">
+      <div class="input-prefix">
+        <span>R$</span>
+        <input
+          type="number"
+          name="salary"
+          min="0"
+          step="0.01"
+          placeholder="0,00"
+          [(ngModel)]="salaryDraft"
+          (keydown.escape)="cancelSalaryEdit()"
+        />
+      </div>
+      <div class="salary-form__actions">
+        <button class="btn btn--ghost btn--sm" type="button" (click)="cancelSalaryEdit()">Cancelar</button>
+        <button class="btn btn--primary btn--sm" type="submit">Salvar</button>
+      </div>
+    </form>
+  } @else {
+    <strong class="stat__value">{{ store.salary() | currency }}</strong>
+    @if (inheritedFromDate(); as from) {
+      <span class="stat__hint">Mesmo valor de {{ from | date: 'MMM/yyyy' }}</span>
+    } @else if (store.salary() === 0) {
+      <button class="stat__cta" type="button" (click)="startSalaryEdit()">Informe seu salário</button>
+    } @else {
+      <span class="stat__hint">Definido para este mês</span>
+    }
+  }
+</article>
+
+<article class="stat stat--spent">
+  <header>
+    <span class="stat__icon"><span class="material-symbols-rounded">trending_down</span></span>
+    <span class="stat__label">Total gasto</span>
+  </header>
+  <strong class="stat__value">{{ store.totalSpent() | currency }}</strong>
+  <span class="stat__hint">
+    {{ store.monthExpenses().length }}
+    {{ store.monthExpenses().length === 1 ? 'despesa' : 'despesas' }} no mês
+  </span>
+</article>
+
+<article class="stat" [class.stat--balance]="store.balance() >= 0" [class.stat--negative]="store.balance() < 0">
+  <header>
+    <span class="stat__icon">
+      <span class="material-symbols-rounded">{{ store.balance() >= 0 ? 'savings' : 'warning' }}</span>
+    </span>
+    <span class="stat__label">Saldo disponível</span>
+  </header>
+  <strong class="stat__value">{{ store.balance() | currency }}</strong>
+  <span class="stat__hint">
+    @if (store.balance() < 0) {
+      Você ultrapassou o salário
+    } @else if (store.biggestExpense(); as biggest) {
+      Maior gasto: {{ biggest.title }}
+    } @else {
+      Nenhum gasto registrado
+    }
+  </span>
+</article>
+
+<article class="stat stat--usage">
+  <header>
+    <span class="stat__icon"><span class="material-symbols-rounded">donut_large</span></span>
+    <span class="stat__label">Comprometido</span>
+  </header>
+  <strong class="stat__value">{{ store.usedPercent() | number: '1.0-1' }}%</strong>
+  <div class="progress" [attr.data-level]="progressLevel()">
+    <div class="progress__bar" [style.width.%]="store.usedPercent() > 100 ? 100 : store.usedPercent()"></div>
+  </div>
+</article>

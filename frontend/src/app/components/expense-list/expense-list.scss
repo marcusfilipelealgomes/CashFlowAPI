@@ -1,0 +1,221 @@
+:host {
+  display: block;
+}
+
+.list-header {
+  flex-wrap: wrap;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.75rem;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  min-width: 200px;
+
+  &:focus-within {
+    border-color: var(--primary);
+  }
+
+  .material-symbols-rounded {
+    font-size: 20px;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 520px) {
+    width: 100%;
+  }
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  animation: slide-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: var(--border);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &--editing {
+    border-color: color-mix(in srgb, var(--warning) 60%, transparent);
+  }
+
+  &__date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--primary) 16%, transparent);
+    line-height: 1.1;
+  }
+
+  &__day {
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  &__month {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--primary-light);
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  &__title {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+
+    .material-symbols-rounded {
+      font-size: 15px;
+    }
+  }
+
+  &__share {
+    height: 4px;
+    max-width: 180px;
+    margin-top: 0.25rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+
+    div {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #f472b6, var(--primary));
+    }
+  }
+
+  &__amount {
+    font-weight: 700;
+    color: #fda4af;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  &--skeleton {
+    display: block;
+    animation: none;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'date body amount'
+      'date body actions';
+    row-gap: 0.35rem;
+    column-gap: 0.75rem;
+
+    &__date { grid-area: date; }
+    &__body { grid-area: body; }
+    &__amount { grid-area: amount; justify-self: end; }
+    &__actions { grid-area: actions; justify-self: end; }
+  }
+}
+
+.skeleton {
+  height: 48px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+  padding: 2.5rem 1rem;
+  color: var(--text-muted);
+
+  .material-symbols-rounded {
+    font-size: 44px;
+    color: var(--primary-light);
+    opacity: 0.7;
+    margin-bottom: 0.25rem;
+  }
+
+  strong {
+    color: var(--text);
+  }
+
+  p {
+    margin: 0;
+    max-width: 340px;
+    font-size: 0.9rem;
+  }
+
+  &--compact {
+    padding: 1.5rem 1rem;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}

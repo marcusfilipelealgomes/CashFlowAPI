@@ -1,0 +1,79 @@
+<section class="card">
+  <header class="card__header list-header">
+    <div>
+      <h2>Despesas do mês</h2>
+      <p>{{ store.monthExpenses().length }} lançamentos · {{ store.totalSpent() | currency }}</p>
+    </div>
+    @if (store.monthExpenses().length > 0) {
+      <div class="search">
+        <span class="material-symbols-rounded">search</span>
+        <input
+          type="search"
+          placeholder="Buscar despesa"
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+          aria-label="Buscar despesa"
+        />
+      </div>
+    }
+  </header>
+
+  @if (store.loading() && store.expenses().length === 0) {
+    <ul class="list">
+      @for (i of [1, 2, 3]; track i) {
+        <li class="item item--skeleton"><div class="skeleton"></div></li>
+      }
+    </ul>
+  } @else if (store.monthExpenses().length === 0) {
+    <div class="empty">
+      <span class="material-symbols-rounded">receipt_long</span>
+      <strong>Nenhuma despesa neste mês</strong>
+      <p>Cadastre sua primeira despesa e acompanhe o saldo sendo atualizado no gráfico.</p>
+    </div>
+  } @else if (filtered().length === 0) {
+    <div class="empty empty--compact">
+      <span class="material-symbols-rounded">search_off</span>
+      <p>Nenhuma despesa encontrada para "{{ search() }}".</p>
+    </div>
+  } @else {
+    <ul class="list">
+      @for (expense of filtered(); track expense.id) {
+        <li class="item" [class.item--editing]="store.editing()?.id === expense.id">
+          <div class="item__date">
+            <span class="item__day">{{ parseDate(expense.date) | date: 'dd' }}</span>
+            <span class="item__month">{{ (parseDate(expense.date) | date: 'MMM')?.replace('.', '') }}</span>
+          </div>
+
+          <div class="item__body">
+            <strong class="item__title">{{ expense.title }}</strong>
+            <span class="item__meta">
+              <span class="material-symbols-rounded">{{ paymentTypeIcon(expense.paymentType) }}</span>
+              {{ paymentTypeLabel(expense.paymentType) }}
+            </span>
+            @if (store.salary() > 0) {
+              <div class="item__share" [title]="'Representa ' + shareOfSalary(expense).toFixed(1) + '% do salário'">
+                <div [style.width.%]="shareOfSalary(expense)"></div>
+              </div>
+            }
+          </div>
+
+          <span class="item__amount">- {{ expense.amount | currency }}</span>
+
+          <div class="item__actions">
+            @if (pendingDeleteId() === expense.id) {
+              <button class="btn btn--ghost btn--sm" type="button" (click)="pendingDeleteId.set(null)">Não</button>
+              <button class="btn btn--danger btn--sm" type="button" (click)="confirmDelete(expense)">Excluir</button>
+            } @else {
+              <button class="icon-btn" type="button" (click)="edit(expense)" aria-label="Editar despesa">
+                <span class="material-symbols-rounded">edit</span>
+              </button>
+              <button class="icon-btn icon-btn--danger" type="button" (click)="askDelete(expense)" aria-label="Excluir despesa">
+                <span class="material-symbols-rounded">delete</span>
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>

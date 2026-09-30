@@ -1,0 +1,114 @@
+:host {
+  display: block;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &--editing {
+    border-color: color-mix(in srgb, var(--warning) 50%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--warning) 10%, transparent);
+  }
+
+  &__badge {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    box-shadow: 0 8px 24px -8px var(--primary);
+  }
+
+  &--editing &__badge {
+    background: linear-gradient(135deg, var(--warning), #fb923c);
+    box-shadow: 0 8px 24px -8px var(--warning);
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+
+    @media (max-width: 380px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 0.25rem;
+  }
+}
+
+fieldset.field {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  line-height: 1.2;
+  padding: 0.6rem 0.7rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .material-symbols-rounded {
+    font-size: 18px;
+  }
+
+  &:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  &--active {
+    color: #fff;
+    border-color: color-mix(in srgb, var(--primary) 70%, transparent);
+    background: color-mix(in srgb, var(--primary) 22%, transparent);
+
+    .material-symbols-rounded {
+      color: var(--primary-light);
+    }
+  }
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 64px;
+}

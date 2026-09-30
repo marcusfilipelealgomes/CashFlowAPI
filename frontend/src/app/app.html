@@ -1,0 +1,74 @@
+<div class="bg-glow" aria-hidden="true"></div>
+
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__logo material-symbols-rounded">monitoring</span>
+      <div>
+        <h1>CashFlow</h1>
+        <p>Controle de despesas mensais</p>
+      </div>
+    </div>
+
+    <nav class="month-nav" aria-label="Selecionar mês">
+      <button class="icon-btn" type="button" (click)="store.previousMonth()" aria-label="Mês anterior">
+        <span class="material-symbols-rounded">chevron_left</span>
+      </button>
+      <div class="month-nav__label">
+        <strong>{{ monthDate() | date: 'MMMM' | titlecase }}</strong>
+        <span>{{ monthDate() | date: 'yyyy' }}</span>
+      </div>
+      <button class="icon-btn" type="button" (click)="store.nextMonth()" aria-label="Próximo mês">
+        <span class="material-symbols-rounded">chevron_right</span>
+      </button>
+      @if (!store.isCurrentMonth()) {
+        <button class="btn btn--ghost btn--sm" type="button" (click)="store.goToCurrentMonth()">Hoje</button>
+      }
+    </nav>
+  </header>
+
+  @if (store.apiOffline()) {
+    <div class="banner" role="alert">
+      <span class="material-symbols-rounded">cloud_off</span>
+      <span>Não foi possível carregar as despesas. Verifique se a API .NET está em execução.</span>
+      <button class="btn btn--ghost btn--sm" type="button" (click)="store.load()">Tentar novamente</button>
+    </div>
+  }
+
+  <main class="dashboard">
+    <app-summary-cards class="area-summary" />
+
+    <section class="card area-timeline">
+      <header class="card__header">
+        <div>
+          <h2>Evolução do saldo</h2>
+          <p>Quanto sobra do salário a cada dia do mês</p>
+        </div>
+        <div class="chart-legend">
+          <span><i class="dot dot--line"></i>Saldo</span>
+          <span><i class="dot dot--bar"></i>Gasto do dia</span>
+        </div>
+      </header>
+      <app-balance-timeline-chart [series]="store.dailySeries()" />
+    </section>
+
+    <section class="card area-donut">
+      <header class="card__header">
+        <div>
+          <h2>Uso do salário</h2>
+          <p>Gasto x disponível</p>
+        </div>
+      </header>
+      <app-balance-donut-chart [salary]="store.salary()" [spent]="store.totalSpent()" />
+      <app-payment-breakdown />
+    </section>
+
+    <app-expense-form class="area-form" id="expense-form" />
+
+    <app-expense-list class="area-list" />
+  </main>
+
+  <footer class="footer">CashFlow · Angular + .NET</footer>
+</div>
+
+<app-toast-container />

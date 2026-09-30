@@ -1,0 +1,77 @@
+<form class="card form" [formGroup]="form" (ngSubmit)="submit()" [class.form--editing]="store.editing()">
+  <header class="card__header">
+    <div>
+      <h2>{{ store.editing() ? 'Editar despesa' : 'Nova despesa' }}</h2>
+      <p>{{ store.editing() ? 'Altere os dados e salve' : 'O saldo é atualizado na hora' }}</p>
+    </div>
+    <span class="form__badge material-symbols-rounded">{{ store.editing() ? 'edit_note' : 'add_card' }}</span>
+  </header>
+
+  <label class="field">
+    <span class="field__label">Nome da despesa</span>
+    <input
+      class="input"
+      type="text"
+      formControlName="title"
+      placeholder="Ex.: Aluguel, Mercado, Internet..."
+      maxlength="100"
+      [class.input--invalid]="isInvalid('title')"
+    />
+    @if (isInvalid('title')) {
+      <span class="field__error">Informe o nome da despesa.</span>
+    }
+  </label>
+
+  <div class="form__row">
+    <label class="field">
+      <span class="field__label">Valor</span>
+      <div class="input-prefix" [class.input--invalid]="isInvalid('amount')">
+        <span>R$</span>
+        <input type="number" formControlName="amount" placeholder="0,00" min="0.01" step="0.01" inputmode="decimal" />
+      </div>
+      @if (isInvalid('amount')) {
+        <span class="field__error">Valor deve ser maior que zero.</span>
+      }
+    </label>
+
+    <label class="field">
+      <span class="field__label">Data</span>
+      <input class="input" type="date" formControlName="date" [max]="maxDate" [class.input--invalid]="isInvalid('date')" />
+      @if (isInvalid('date')) {
+        <span class="field__error">Informe a data.</span>
+      }
+    </label>
+  </div>
+
+  <fieldset class="field">
+    <legend class="field__label">Forma de pagamento</legend>
+    <div class="chips">
+      @for (option of paymentOptions; track option.value) {
+        <label class="chip" [class.chip--active]="form.controls.paymentType.value === option.value">
+          <input type="radio" formControlName="paymentType" [value]="option.value" />
+          <span class="material-symbols-rounded">{{ option.icon }}</span>
+          {{ option.label }}
+        </label>
+      }
+    </div>
+  </fieldset>
+
+  <label class="field">
+    <span class="field__label">Observação <small>(opcional)</small></span>
+    <textarea class="input" rows="2" formControlName="description" placeholder="Algum detalhe sobre a despesa"></textarea>
+  </label>
+
+  <div class="form__actions">
+    @if (store.editing()) {
+      <button class="btn btn--ghost" type="button" (click)="cancel()">Cancelar</button>
+    }
+    <button class="btn btn--primary btn--block" type="submit" [disabled]="store.saving()">
+      @if (store.saving()) {
+        <span class="spinner"></span> Salvando...
+      } @else {
+        <span class="material-symbols-rounded">{{ store.editing() ? 'check' : 'add' }}</span>
+        {{ store.editing() ? 'Salvar alterações' : 'Adicionar despesa' }}
+      }
+    </button>
+  </div>
+</form>

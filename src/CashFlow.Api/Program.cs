@@ -15,10 +15,20 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddMvc(options => options.Filters.Add(typeof(ExceptionFilter)));
 
-builder.Services.AddInfrasTructure(builder.Configuration); // Adiciona a infraestrutura ao contêiner de serviços, registrando os serviços necessários para a aplicação.
-builder.Services.AddApplication(); // Adiciona a camada de aplicação ao contêiner de serviços, registrando os casos de uso e serviços relacionados à lógica de negócios.    
+builder.Services.AddInfrasTructure(builder.Configuration); // Adiciona a infraestrutura ao contï¿½iner de serviï¿½os, registrando os serviï¿½os necessï¿½rios para a aplicaï¿½ï¿½o.
+builder.Services.AddApplication(); // Adiciona a camada de aplicaï¿½ï¿½o ao contï¿½iner de serviï¿½os, registrando os casos de uso e serviï¿½os relacionados ï¿½ lï¿½gica de negï¿½cios.    
 
 
+
+
+const string FrontendCorsPolicy = "Frontend";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(FrontendCorsPolicy, policy => policy
+        .WithOrigins("http://localhost:4200")
+        .AllowAnyHeader()
+        .AllowAnyMethod());
+});
 
 var app = builder.Build();
 
@@ -28,6 +38,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(); 
 }
+
+app.UseCors(FrontendCorsPolicy);
 
 app.UseHttpsRedirection();
 

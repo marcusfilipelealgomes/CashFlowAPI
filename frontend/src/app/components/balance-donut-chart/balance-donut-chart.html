@@ -1,0 +1,17 @@
+<div class="donut">
+  <canvas #canvas aria-label="Gráfico de comprometimento do salário" role="img"></canvas>
+  <div class="donut__center">
+    <span class="donut__percent" [class.danger]="overBudget()">{{ percent() | number: '1.0-0' }}%</span>
+    <span class="donut__caption">do salário usado</span>
+  </div>
+</div>
+
+<ul class="legend">
+  @for (segment of segments(); track segment.label) {
+    <li>
+      <span class="legend__dot" [style.background]="segment.color"></span>
+      <span class="legend__label">{{ segment.label }}</span>
+      <strong>{{ segment.value | currency }}</strong>
+    </li>
+  }
+</ul>

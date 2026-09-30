@@ -1,0 +1,165 @@
+:host {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--gap);
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 520px) {
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .stat {
+    padding: 1rem;
+
+    &--salary,
+    &--usage {
+      grid-column: 1 / -1;
+    }
+
+    &:not(.stat--salary):not(.stat--usage) .stat__value {
+      font-size: 1.15rem;
+    }
+  }
+}
+
+.stat {
+  --tone: var(--primary);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    right: -50px;
+    top: -60px;
+    border-radius: 50%;
+    background: var(--tone);
+    opacity: 0.12;
+    filter: blur(20px);
+    pointer-events: none;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--tone) 40%, transparent);
+  }
+
+  &--salary { --tone: var(--primary); }
+  &--spent { --tone: #f472b6; }
+  &--balance { --tone: var(--success); }
+  &--negative { --tone: var(--danger); }
+  &--usage { --tone: var(--accent); }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 34px;
+  }
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    color: var(--tone);
+    background: color-mix(in srgb, var(--tone) 16%, transparent);
+
+    .material-symbols-rounded {
+      font-size: 20px;
+    }
+  }
+
+  &__label {
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  &__value {
+    font-size: clamp(1.4rem, 2.2vw, 1.75rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &--negative &__value {
+    color: var(--danger);
+  }
+
+  &__hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__cta {
+    align-self: flex-start;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--primary-light);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.salary-form {
+  display: grid;
+  gap: 0.6rem;
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}
+
+.progress {
+  height: 8px;
+  margin-top: 0.35rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+
+  &__bar {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--accent), var(--primary));
+    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  &[data-level='warning'] &__bar {
+    background: linear-gradient(90deg, var(--warning), #fb923c);
+  }
+
+  &[data-level='danger'] &__bar {
+    background: linear-gradient(90deg, #fb923c, var(--danger));
+  }
+}
