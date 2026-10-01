@@ -8,10 +8,7 @@
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(600px circle at 10% -10%, rgba(124, 92, 255, 0.25), transparent 60%),
-    radial-gradient(500px circle at 100% 0%, rgba(34, 211, 238, 0.15), transparent 60%),
-    radial-gradient(700px circle at 50% 120%, rgba(244, 114, 182, 0.1), transparent 60%);
+  background: radial-gradient(900px circle at 50% -20%, var(--bg-glow), transparent 70%);
 }
 
 .shell {
@@ -33,6 +30,7 @@
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  flex: 1;
 
   &__logo {
     display: grid;
@@ -67,7 +65,7 @@
   border-radius: 16px;
   background: var(--surface);
   border: 1px solid var(--border);
-  backdrop-filter: blur(12px);
+  box-shadow: var(--card-shadow);
 
   &__label {
     display: flex;
@@ -87,8 +85,40 @@
   }
 
   @media (max-width: 520px) {
+    order: 3;
     width: 100%;
     justify-content: space-between;
+  }
+}
+
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.25s ease;
+
+  &:hover {
+    border-color: var(--border-strong);
+  }
+
+  .material-symbols-rounded {
+    font-size: 22px;
+    animation: spin-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@keyframes spin-in {
+  from {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.6);
   }
 }
 
@@ -141,8 +171,33 @@
       'donut'
       'timeline'
       'list';
+
+    // No celular os lembretes sobem para logo abaixo do resumo.
+    &--upcoming {
+      grid-template-areas:
+        'summary'
+        'upcoming'
+        'form'
+        'donut'
+        'timeline'
+        'list';
+    }
   }
 }
+
+.area-stack {
+  grid-area: list;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  min-width: 0;
+
+  @media (max-width: 760px) {
+    display: contents;
+  }
+}
+
+.area-upcoming { grid-area: upcoming; }
 
 .area-summary { grid-area: summary; }
 .area-timeline {
@@ -170,7 +225,8 @@
 
 .chart-legend {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
   font-size: 0.8rem;
   color: var(--text-muted);
 
@@ -194,8 +250,19 @@
     background: var(--accent);
   }
 
+  &--dashed {
+    height: 0;
+    width: 16px;
+    border-radius: 0;
+    border-top: 2px dashed var(--accent);
+  }
+
   &--bar {
     background: rgba(124, 92, 255, 0.75);
+  }
+
+  &--pending {
+    background: rgba(251, 191, 36, 0.75);
   }
 }
 

@@ -43,12 +43,16 @@
 <article class="stat stat--spent">
   <header>
     <span class="stat__icon"><span class="material-symbols-rounded">trending_down</span></span>
-    <span class="stat__label">Total gasto</span>
+    <span class="stat__label">Pago no mês</span>
   </header>
-  <strong class="stat__value">{{ store.totalSpent() | currency }}</strong>
+  <strong class="stat__value">{{ store.totalPaid() | currency }}</strong>
   <span class="stat__hint">
-    {{ store.monthExpenses().length }}
-    {{ store.monthExpenses().length === 1 ? 'despesa' : 'despesas' }} no mês
+    @if (store.totalPending() > 0) {
+      <span class="stat__pending">+ {{ store.totalPending() | currency }} a vencer</span>
+    } @else {
+      {{ store.monthExpenses().length }}
+      {{ store.monthExpenses().length === 1 ? 'despesa' : 'despesas' }} no mês
+    }
   </span>
 </article>
 
@@ -60,9 +64,12 @@
     <span class="stat__label">Saldo disponível</span>
   </header>
   <strong class="stat__value">{{ store.balance() | currency }}</strong>
-  <span class="stat__hint">
+  <span class="stat__hint" [class.stat__hint--wrap]="store.totalPending() > 0">
     @if (store.balance() < 0) {
       Você ultrapassou o salário
+    } @else if (store.totalPending() > 0) {
+      No fim do mês:
+      <strong [class.stat__negative]="store.projectedBalance() < 0">{{ store.projectedBalance() | currency }}</strong>
     } @else if (store.biggestExpense(); as biggest) {
       Maior gasto: {{ biggest.title }}
     } @else {
@@ -78,6 +85,13 @@
   </header>
   <strong class="stat__value">{{ store.usedPercent() | number: '1.0-1' }}%</strong>
   <div class="progress" [attr.data-level]="progressLevel()">
-    <div class="progress__bar" [style.width.%]="store.usedPercent() > 100 ? 100 : store.usedPercent()"></div>
+    <div class="progress__bar" [style.width.%]="paidWidth()"></div>
+    <div class="progress__bar progress__bar--pending" [style.width.%]="pendingWidth()"></div>
   </div>
+  @if (store.totalPending() > 0) {
+    <span class="stat__hint">
+      {{ store.paidPercent() | number: '1.0-0' }}% pago ·
+      <span class="stat__pending">{{ store.usedPercent() - store.paidPercent() | number: '1.0-0' }}% a vencer</span>
+    </span>
+  }
 </article>

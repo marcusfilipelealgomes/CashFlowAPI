@@ -3,6 +3,7 @@ using CashFlow.Application.UseCases.Expenses.GetAll;
 using CashFlow.Application.UseCases.Expenses.GetById;
 using CashFlow.Application.UseCases.Expenses.Register;
 using CashFlow.Application.UseCases.Expenses.Update;
+using CashFlow.Application.UseCases.Expenses.UpdateStatus;
 using CashFlow.Communication.Requests;
 using CashFlow.Communication.Responses;
 using Microsoft.AspNetCore.Mvc;
@@ -79,6 +80,22 @@ public class ExpensesController : ControllerBase
         [FromServices] IUpdateExpenseUseCase useCase,
         [FromRoute] long id,
         [FromBody] RequestExpenseJson request)
+    {
+        await useCase.Execute(id, request);
+
+        return NoContent();
+    }
+
+
+    [HttpPatch]
+    [Route("{id}/status")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResponseErrorJson), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateStatus(
+        [FromServices] IUpdateExpenseStatusUseCase useCase,
+        [FromRoute] long id,
+        [FromBody] RequestExpenseStatusJson request)
     {
         await useCase.Execute(id, request);
 

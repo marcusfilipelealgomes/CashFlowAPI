@@ -95,6 +95,15 @@ namespace CashFlow.Exception {
                 return ResourceManager.GetString("PAYMENT_TYPE_INVALID", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid expense status..
+        /// </summary>
+        public static string STATUS_INVALID {
+            get {
+                return ResourceManager.GetString("STATUS_INVALID", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Title is required..

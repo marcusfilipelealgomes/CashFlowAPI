@@ -20,6 +20,11 @@ export function paymentTypeIcon(type: PaymentType): string {
   return PAYMENT_TYPE_OPTIONS.find((o) => o.value === type)?.icon ?? 'receipt_long';
 }
 
+export enum ExpenseStatus {
+  Paid = 0,
+  Pending = 1,
+}
+
 /** `date` sempre no formato `yyyy-MM-dd`, sem fuso horário. */
 export interface Expense {
   id: number;
@@ -27,6 +32,15 @@ export interface Expense {
   amount: number;
   date: string;
   paymentType: PaymentType;
+  status: ExpenseStatus;
+}
+
+/**
+ * Uma despesa só fica "A vencer" enquanto a data de vencimento não chegou;
+ * a partir do dia do vencimento ela passa a contar como realizada.
+ */
+export function isPending(expense: Expense, today: string): boolean {
+  return expense.status === ExpenseStatus.Pending && expense.date > today;
 }
 
 export interface ExpenseDetail extends Expense {
@@ -39,4 +53,5 @@ export interface ExpenseRequest {
   amount: number;
   date: string;
   paymentType: PaymentType;
+  status: ExpenseStatus;
 }

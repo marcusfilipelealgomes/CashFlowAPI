@@ -47,19 +47,37 @@ public class RegisterExpenseValidatorTests
 
 
     [Fact]
-    public void Error_Date_Futurey()
+    public void Sucess_Date_Future_Pending()
     {
         //Arrange
         var validator = new ExpenseValidator();
-        var request = RequestRegisterExpenseJsonBuilder.Build();   // Cria um objeto de request com dados válidos usando o builder
-        request.Date = DateTime.UtcNow.AddDays(1); // Define a data como uma data futura para simular um cenário de erro
+        var request = RequestRegisterExpenseJsonBuilder.Build();
+        request.Date = DateTime.UtcNow.AddDays(10);
+        request.Status = ExpenseStatus.Pending;
 
         //Act
         var result = validator.Validate(request);
 
         //Assert
-        result.IsValid.Should().BeFalse(); // Verifica se o resultado da validação é válido, se for, o teste passa, caso contrário, o teste falha. 
-        result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourceErrorMesseges.EXPENSES_CANNOT_FOR_THE_FUTURE)); // Verifica se a mensagem de erro é a esperada, se for, o teste passa, caso contrário, o teste falha.
+        result.IsValid.Should().BeTrue();
+    }
+
+
+
+    [Fact]
+    public void Error_Status_Invalid()
+    {
+        //Arrange
+        var validator = new ExpenseValidator();
+        var request = RequestRegisterExpenseJsonBuilder.Build();
+        request.Status = (ExpenseStatus)700;
+
+        //Act
+        var result = validator.Validate(request);
+
+        //Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().ContainSingle().And.Contain(e => e.ErrorMessage.Equals(ResourceErrorMesseges.STATUS_INVALID));
     }
 
 

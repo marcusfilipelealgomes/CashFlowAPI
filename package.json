@@ -1,0 +1,14 @@
+{
+  "name": "cashflow",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm --prefix frontend install",
+    "start": "concurrently --kill-others --names API,WEB --prefix-colors magenta,cyan \"npm:api\" \"npm:web\"",
+    "api": "dotnet run --project src/CashFlow.Api --launch-profile http",
+    "web": "wait-on --timeout 180000 tcp:127.0.0.1:5118 && npm --prefix frontend start -- --open"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5",
+    "wait-on": "^9.5.1"
+  }
+}

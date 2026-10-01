@@ -22,15 +22,14 @@
     font-size: 2.4rem;
     font-weight: 800;
     letter-spacing: -0.03em;
-    background: linear-gradient(135deg, #fff, #b9a8ff);
+    background: linear-gradient(135deg, var(--text), var(--primary-light));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
 
     &.danger {
-      background: linear-gradient(135deg, #fecaca, var(--danger));
-      -webkit-background-clip: text;
-      background-clip: text;
+      background: none;
+      color: var(--danger);
     }
   }
 

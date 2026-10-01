@@ -21,8 +21,8 @@ export class ToastService {
     this.push('error', message, 6000);
   }
 
-  info(message: string) {
-    this.push('info', message);
+  info(message: string, timeout?: number) {
+    this.push('info', message, timeout);
   }
 
   dismiss(id: number) {

@@ -8,4 +8,5 @@ public class ResponseShortExpenseJson
     public decimal Amount { get; set; }
     public DateTime Date { get; set; }
     public PaymentType PaymentType { get; set; }
+    public ExpenseStatus Status { get; set; }
 }

@@ -8,5 +8,6 @@ public class RequestExpenseJson
     public decimal Amount { get; set; }
     public required PaymentType PaymentType { get; set; }
     public DateTime Date { get; set; }
+    public ExpenseStatus Status { get; set; } = ExpenseStatus.Paid;
 
 }

@@ -2,7 +2,7 @@
   <header class="card__header">
     <div>
       <h2>{{ store.editing() ? 'Editar despesa' : 'Nova despesa' }}</h2>
-      <p>{{ store.editing() ? 'Altere os dados e salve' : 'O saldo é atualizado na hora' }}</p>
+      <p>{{ store.editing() ? 'Altere os dados e salve' : 'Use uma data futura para agendar contas a vencer' }}</p>
     </div>
     <span class="form__badge material-symbols-rounded">{{ store.editing() ? 'edit_note' : 'add_card' }}</span>
   </header>
@@ -36,12 +36,40 @@
 
     <label class="field">
       <span class="field__label">Data</span>
-      <input class="input" type="date" formControlName="date" [max]="maxDate" [class.input--invalid]="isInvalid('date')" />
+      <input class="input" type="date" formControlName="date" [class.input--invalid]="isInvalid('date')" />
       @if (isInvalid('date')) {
         <span class="field__error">Informe a data.</span>
       }
     </label>
   </div>
+
+  @if (isFuture()) {
+    <fieldset class="field status">
+      <legend class="field__label">Status</legend>
+      <div class="chips">
+        <label class="chip chip--pending" [class.chip--active]="form.controls.status.value === ExpenseStatus.Pending">
+          <input type="radio" formControlName="status" [value]="ExpenseStatus.Pending" />
+          <span class="material-symbols-rounded">schedule</span>
+          A vencer
+        </label>
+        <label class="chip chip--paid" [class.chip--active]="form.controls.status.value === ExpenseStatus.Paid">
+          <input type="radio" formControlName="status" [value]="ExpenseStatus.Paid" />
+          <span class="material-symbols-rounded">task_alt</span>
+          Já paga
+        </label>
+      </div>
+      <p class="status__hint">
+        @if (scheduling()) {
+          <span class="material-symbols-rounded">notifications_active</span>
+          Fica como prevista até {{ dueDate() | date: "dd 'de' MMMM" }} e vira realizada automaticamente no dia do
+          vencimento.
+        } @else {
+          <span class="material-symbols-rounded">info</span>
+          Paga antecipadamente: já desconta do saldo atual.
+        }
+      </p>
+    </fieldset>
+  }
 
   <fieldset class="field">
     <legend class="field__label">Forma de pagamento</legend>
@@ -69,8 +97,13 @@
       @if (store.saving()) {
         <span class="spinner"></span> Salvando...
       } @else {
-        <span class="material-symbols-rounded">{{ store.editing() ? 'check' : 'add' }}</span>
-        {{ store.editing() ? 'Salvar alterações' : 'Adicionar despesa' }}
+        @if (store.editing()) {
+          <span class="material-symbols-rounded">check</span> Salvar alterações
+        } @else if (scheduling()) {
+          <span class="material-symbols-rounded">event_upcoming</span> Agendar conta
+        } @else {
+          <span class="material-symbols-rounded">add</span> Adicionar despesa
+        }
       }
     </button>
   </div>

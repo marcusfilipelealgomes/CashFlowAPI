@@ -1,0 +1,43 @@
+<section class="card upcoming">
+  <header class="card__header">
+    <div>
+      <h2>Próximos vencimentos</h2>
+      <p>
+        {{ store.upcoming().length }} {{ store.upcoming().length === 1 ? 'conta' : 'contas' }} ·
+        {{ store.totalPending() | currency }} a vencer
+      </p>
+    </div>
+    <span class="upcoming__badge material-symbols-rounded">notifications_active</span>
+  </header>
+
+  <ul class="upcoming__list">
+    @for (expense of store.upcoming(); track expense.id) {
+      <li class="reminder" [class.reminder--soon]="isDueSoon(expense)">
+        <div class="reminder__date">
+          <span class="reminder__day">{{ parseDate(expense.date) | date: 'dd' }}</span>
+          <span class="reminder__weekday">{{ (parseDate(expense.date) | date: 'EEE')?.replace('.', '') }}</span>
+        </div>
+
+        <div class="reminder__body">
+          <strong>{{ expense.title }}</strong>
+          <span class="reminder__countdown">
+            <span class="material-symbols-rounded">{{ isDueSoon(expense) ? 'alarm' : 'schedule' }}</span>
+            {{ countdown(expense) }}
+          </span>
+        </div>
+
+        <span class="reminder__amount">{{ expense.amount | currency }}</span>
+
+        <button class="btn btn--ghost btn--sm reminder__pay" type="button" (click)="markAsPaid(expense)">
+          <span class="material-symbols-rounded">task_alt</span>
+          Paguei
+        </button>
+      </li>
+    }
+  </ul>
+
+  <p class="upcoming__footer">
+    <span class="material-symbols-rounded">info</span>
+    No dia do vencimento a conta vira "Realizada" automaticamente e passa a descontar do saldo.
+  </p>
+</section>

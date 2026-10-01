@@ -5,16 +5,27 @@ import {
   OnDestroy,
   computed,
   effect,
+  inject,
   input,
   viewChild,
 } from '@angular/core';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
-import { CHART_COLORS, Chart, brl } from '../../core/chart-setup';
+import {
+  CHART_COLORS,
+  CHART_PALETTES,
+  Chart,
+  ChartPalette,
+  applyTooltipPalette,
+  brl,
+} from '../../core/chart-setup';
+import { ThemeService } from '../../services/theme.service';
 
 interface Segment {
   label: string;
   value: number;
   color: string;
+  /** Aparece só na legenda: o anel representa o total previsto, não o excedente. */
+  legendOnly?: boolean;
 }
 
 @Component({
@@ -25,36 +36,43 @@ interface Segment {
 })
 export class BalanceDonutChart implements AfterViewInit, OnDestroy {
   readonly salary = input.required<number>();
-  readonly spent = input.required<number>();
+  readonly paid = input.required<number>();
+  readonly pending = input(0);
 
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
+  private readonly theme = inject(ThemeService);
+  private readonly palette = computed(() => CHART_PALETTES[this.theme.theme()]);
   private chart?: Chart<'doughnut'>;
 
-  readonly overBudget = computed(() => this.spent() > this.salary());
-  readonly percent = computed(() => (this.salary() > 0 ? (this.spent() / this.salary()) * 100 : 0));
-  readonly remaining = computed(() => this.salary() - this.spent());
+  readonly planned = computed(() => this.paid() + this.pending());
+  readonly overBudget = computed(() => this.planned() > this.salary());
+  readonly percent = computed(() => (this.salary() > 0 ? (this.planned() / this.salary()) * 100 : 0));
 
   readonly segments = computed<Segment[]>(() => {
     const salary = this.salary();
-    const spent = this.spent();
+    const pending = this.pending();
+    const segments: Segment[] = [{ label: 'Pago', value: this.paid(), color: CHART_COLORS.primary }];
+    if (pending > 0) segments.push({ label: 'A vencer', value: pending, color: CHART_COLORS.warning });
+
     if (this.overBudget()) {
-      return [
-        { label: 'Salário comprometido', value: salary, color: CHART_COLORS.primary },
-        { label: 'Acima do salário', value: spent - salary, color: CHART_COLORS.danger },
-      ];
+      segments.push({
+        label: 'Acima do salário',
+        value: this.planned() - salary,
+        color: CHART_COLORS.danger,
+        legendOnly: true,
+      });
+    } else {
+      segments.push({ label: 'Disponível', value: salary - this.planned(), color: CHART_COLORS.success });
     }
-    return [
-      { label: 'Gasto', value: spent, color: CHART_COLORS.primary },
-      { label: 'Disponível', value: salary - spent, color: CHART_COLORS.success },
-    ];
+    return segments;
   });
 
   constructor() {
     effect(() => {
       const segments = this.segments();
+      const palette = this.palette();
       if (!this.chart) return;
-      this.applySegments(this.chart, segments);
-      this.chart.update();
+      this.render(this.chart, segments, palette);
     });
   }
 
@@ -75,26 +93,27 @@ export class BalanceDonutChart implements AfterViewInit, OnDestroy {
         },
       },
     });
-    this.applySegments(this.chart, this.segments());
-    this.chart.update();
+    this.render(this.chart, this.segments(), this.palette());
   }
 
   ngOnDestroy() {
     this.chart?.destroy();
   }
 
-  private applySegments(chart: Chart<'doughnut'>, segments: Segment[]) {
-    const visible = segments.filter((s) => s.value > 0);
+  private render(chart: Chart<'doughnut'>, segments: Segment[], palette: ChartPalette) {
+    const visible = segments.filter((s) => s.value > 0 && !s.legendOnly);
     const hasData = visible.length > 0;
     const multiple = visible.length > 1;
     chart.data.labels = hasData ? visible.map((s) => s.label) : [''];
     chart.data.datasets[0] = {
       data: hasData ? visible.map((s) => s.value) : [1],
-      backgroundColor: hasData ? visible.map((s) => s.color) : [CHART_COLORS.track],
+      backgroundColor: hasData ? visible.map((s) => s.color) : [palette.track],
       borderWidth: 0,
       borderRadius: multiple ? 8 : 0,
       spacing: multiple ? 3 : 0,
       hoverOffset: hasData ? 6 : 0,
     };
+    applyTooltipPalette(chart, palette);
+    chart.update();
   }
 }

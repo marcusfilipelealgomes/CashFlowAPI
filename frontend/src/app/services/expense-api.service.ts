@@ -2,7 +2,13 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { API_BASE_URL } from '../core/api.config';
-import { Expense, ExpenseDetail, ExpenseRequest, PaymentType } from '../models/expense.model';
+import {
+  Expense,
+  ExpenseDetail,
+  ExpenseRequest,
+  ExpenseStatus,
+  PaymentType,
+} from '../models/expense.model';
 
 interface ApiExpense {
   id: number;
@@ -10,6 +16,7 @@ interface ApiExpense {
   amount: number;
   date: string;
   paymentType: PaymentType;
+  status?: ExpenseStatus;
   description?: string;
 }
 
@@ -19,6 +26,7 @@ const toExpense = (e: ApiExpense): Expense => ({
   amount: Number(e.amount),
   date: e.date.substring(0, 10),
   paymentType: e.paymentType,
+  status: e.status ?? ExpenseStatus.Paid,
 });
 
 @Injectable({ providedIn: 'root' })
@@ -45,6 +53,10 @@ export class ExpenseApiService {
 
   update(id: number, request: ExpenseRequest): Observable<unknown> {
     return this.http.put(`${this.url}/${id}`, this.toBody(request));
+  }
+
+  updateStatus(id: number, status: ExpenseStatus): Observable<unknown> {
+    return this.http.patch(`${this.url}/${id}/status`, { status });
   }
 
   delete(id: number): Observable<unknown> {

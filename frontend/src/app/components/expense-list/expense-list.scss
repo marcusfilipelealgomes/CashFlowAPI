@@ -42,6 +42,79 @@
   }
 }
 
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+
+  button {
+    --tone: var(--primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    span {
+      min-width: 1.3rem;
+      padding: 0 0.35rem;
+      border-radius: 999px;
+      background: var(--surface-hover);
+      font-size: 0.72rem;
+      text-align: center;
+    }
+
+    &:hover {
+      color: var(--text);
+    }
+
+    &.filters__pending {
+      --tone: var(--warning);
+    }
+
+    &.filters__paid {
+      --tone: var(--success);
+    }
+
+    &.active {
+      color: var(--text);
+      border-color: color-mix(in srgb, var(--tone) 60%, transparent);
+      background: color-mix(in srgb, var(--tone) 16%, transparent);
+    }
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1rem 0.5rem 0.1rem 0.35rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &[data-kind='paid'],
+  &[data-kind='early'] {
+    color: var(--success);
+    background: color-mix(in srgb, var(--success) 14%, transparent);
+  }
+
+  &[data-kind='pending'] {
+    color: var(--warning);
+    background: color-mix(in srgb, var(--warning) 16%, transparent);
+  }
+}
+
 .list {
   list-style: none;
   margin: 0;
@@ -64,7 +137,7 @@
 
   &:hover {
     border-color: var(--border);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--surface-hover);
   }
 
   &--editing {
@@ -111,8 +184,9 @@
 
   &__meta {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.3rem 0.6rem;
     font-size: 0.78rem;
     color: var(--text-muted);
 
@@ -121,12 +195,39 @@
     }
   }
 
+  &__payment {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+
+  &--pending {
+    border: 1px dashed color-mix(in srgb, var(--warning) 45%, transparent);
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--warning) 70%, transparent);
+    }
+  }
+
+  &--pending &__date {
+    background: color-mix(in srgb, var(--warning) 16%, transparent);
+  }
+
+  &--pending &__month {
+    color: var(--warning);
+  }
+
+  &--pending &__amount {
+    color: var(--warning);
+  }
+
   &__share {
     height: 4px;
     max-width: 180px;
     margin-top: 0.25rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--border);
     overflow: hidden;
 
     div {
@@ -138,7 +239,7 @@
 
   &__amount {
     font-weight: 700;
-    color: #fda4af;
+    color: var(--expense-text);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
@@ -171,7 +272,7 @@
 .skeleton {
   height: 48px;
   border-radius: 10px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  background: linear-gradient(90deg, var(--surface-2), var(--surface-hover), var(--surface-2));
   background-size: 200% 100%;
   animation: shimmer 1.2s infinite;
 }

@@ -34,9 +34,10 @@ import { ToastService } from '../../services/toast.service';
       gap: 0.65rem;
       padding: 0.8rem 0.9rem;
       border-radius: 14px;
-      background: rgba(18, 23, 45, 0.96);
+      background: var(--toast-bg);
+      color: var(--text);
       border: 1px solid color-mix(in srgb, var(--tone) 40%, transparent);
-      box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.35);
       font-size: 0.9rem;
       animation: pop 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }

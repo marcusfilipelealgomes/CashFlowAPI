@@ -1,0 +1,145 @@
+:host {
+  display: block;
+}
+
+.upcoming {
+  border-color: color-mix(in srgb, var(--warning) 30%, var(--border));
+
+  &__badge {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    color: #1a1200;
+    background: linear-gradient(135deg, var(--warning), #fb923c);
+    box-shadow: 0 8px 24px -8px var(--warning);
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    margin: 0.9rem 0 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: var(--text-muted);
+
+    .material-symbols-rounded {
+      font-size: 16px;
+    }
+  }
+}
+
+.reminder {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  animation: reminder-in 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+
+  &--soon {
+    border-color: color-mix(in srgb, var(--warning) 55%, transparent);
+    background: color-mix(in srgb, var(--warning) 8%, var(--surface-2));
+  }
+
+  &__date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--warning) 16%, transparent);
+    line-height: 1.1;
+  }
+
+  &__day {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  &__weekday {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--warning);
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+
+    strong {
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &__countdown {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.76rem;
+    color: var(--text-muted);
+
+    .material-symbols-rounded {
+      font-size: 15px;
+    }
+  }
+
+  &--soon &__countdown {
+    color: var(--warning);
+    font-weight: 600;
+  }
+
+  &__amount {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  &__pay {
+    .material-symbols-rounded {
+      font-size: 18px;
+      color: var(--success);
+    }
+  }
+
+  @media (max-width: 520px) {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'date body amount'
+      'date body pay';
+    row-gap: 0.35rem;
+
+    &__date { grid-area: date; }
+    &__body { grid-area: body; }
+    &__amount { grid-area: amount; justify-self: end; }
+    &__pay { grid-area: pay; justify-self: end; }
+  }
+}
+
+@keyframes reminder-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}

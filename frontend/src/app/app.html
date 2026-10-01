@@ -25,6 +25,20 @@
         <button class="btn btn--ghost btn--sm" type="button" (click)="store.goToCurrentMonth()">Hoje</button>
       }
     </nav>
+
+    <button
+      class="theme-toggle"
+      type="button"
+      (click)="theme.toggle()"
+      [attr.aria-label]="theme.theme() === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'"
+      [title]="theme.theme() === 'dark' ? 'Modo claro' : 'Modo escuro'"
+    >
+      @if (theme.theme() === 'dark') {
+        <span class="material-symbols-rounded">light_mode</span>
+      } @else {
+        <span class="material-symbols-rounded">dark_mode</span>
+      }
+    </button>
   </header>
 
   @if (store.apiOffline()) {
@@ -35,7 +49,7 @@
     </div>
   }
 
-  <main class="dashboard">
+  <main class="dashboard" [class.dashboard--upcoming]="store.upcoming().length > 0">
     <app-summary-cards class="area-summary" />
 
     <section class="card area-timeline">
@@ -46,7 +60,13 @@
         </div>
         <div class="chart-legend">
           <span><i class="dot dot--line"></i>Saldo</span>
-          <span><i class="dot dot--bar"></i>Gasto do dia</span>
+          @if (store.totalPending() > 0) {
+            <span><i class="dot dot--dashed"></i>Previsto</span>
+          }
+          <span><i class="dot dot--bar"></i>Pago</span>
+          @if (store.totalPending() > 0) {
+            <span><i class="dot dot--pending"></i>A vencer</span>
+          }
         </div>
       </header>
       <app-balance-timeline-chart [series]="store.dailySeries()" />
@@ -56,16 +76,25 @@
       <header class="card__header">
         <div>
           <h2>Uso do salário</h2>
-          <p>Gasto x disponível</p>
+          <p>Pago, a vencer e disponível</p>
         </div>
       </header>
-      <app-balance-donut-chart [salary]="store.salary()" [spent]="store.totalSpent()" />
+      <app-balance-donut-chart
+        [salary]="store.salary()"
+        [paid]="store.totalPaid()"
+        [pending]="store.totalPending()"
+      />
       <app-payment-breakdown />
     </section>
 
     <app-expense-form class="area-form" id="expense-form" />
 
-    <app-expense-list class="area-list" />
+    <div class="area-stack">
+      @if (store.upcoming().length > 0) {
+        <app-upcoming-expenses class="area-upcoming" />
+      }
+      <app-expense-list class="area-list" />
+    </div>
   </main>
 
   <footer class="footer">CashFlow · Angular + .NET</footer>

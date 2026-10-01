@@ -8,12 +8,24 @@ import {
   isSameMonth,
   monthFromIsoDate,
   monthKey,
+  parseIsoDate,
+  toIsoDate,
+  todayIso,
 } from '../core/month';
-import { Expense, ExpenseDetail, ExpenseRequest, PAYMENT_TYPE_OPTIONS } from '../models/expense.model';
+import {
+  Expense,
+  ExpenseDetail,
+  ExpenseRequest,
+  ExpenseStatus,
+  PAYMENT_TYPE_OPTIONS,
+  isPending,
+} from '../models/expense.model';
 import { ExpenseApiService, extractApiError } from './expense-api.service';
 import { ToastService } from './toast.service';
 
 const SALARIES_STORAGE_KEY = 'cashflow.salaries';
+const DUE_SOON_DAYS = 3;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface SalaryInfo {
   value: number;
@@ -23,8 +35,16 @@ export interface SalaryInfo {
 
 export interface DailySeries {
   labels: string[];
-  spentPerDay: number[];
+  paidPerDay: number[];
+  pendingPerDay: number[];
+  /** Saldo já realizado (até hoje). */
   balance: (number | null)[];
+  /** Saldo previsto considerando as despesas a vencer (de hoje em diante). */
+  projected: (number | null)[];
+}
+
+export interface UpcomingExpense extends Expense {
+  daysUntil: number;
 }
 
 function loadSalaries(): Record<string, number> {
@@ -35,12 +55,20 @@ function loadSalaries(): Record<string, number> {
   }
 }
 
+function sum(list: Expense[]): number {
+  return list.reduce((total, e) => total + e.amount, 0);
+}
+
 @Injectable({ providedIn: 'root' })
 export class BudgetStore {
   private readonly api = inject(ExpenseApiService);
   private readonly toast = inject(ToastService);
 
   private readonly salaries = signal<Record<string, number>>(loadSalaries());
+  private dueSoonNotified = false;
+
+  /** Atualizado a cada minuto para que as despesas virem "realizadas" no dia do vencimento sem recarregar. */
+  readonly today = signal(todayIso());
 
   readonly expenses = signal<Expense[]>([]);
   readonly loading = signal(false);
@@ -50,7 +78,7 @@ export class BudgetStore {
   readonly editing = signal<ExpenseDetail | null>(null);
 
   readonly selectedKey = computed(() => monthKey(this.selectedMonth()));
-  readonly isCurrentMonth = computed(() => isSameMonth(this.selectedMonth(), currentMonth()));
+  readonly isCurrentMonth = computed(() => isSameMonth(this.selectedMonth(), monthFromIsoDate(this.today())));
 
   readonly salaryInfo = computed<SalaryInfo>(() => {
     const key = this.selectedKey();
@@ -73,48 +101,87 @@ export class BudgetStore {
       .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
   });
 
-  readonly totalSpent = computed(() => this.monthExpenses().reduce((sum, e) => sum + e.amount, 0));
-  readonly balance = computed(() => this.salary() - this.totalSpent());
-  readonly usedPercent = computed(() =>
-    this.salary() > 0 ? (this.totalSpent() / this.salary()) * 100 : 0,
-  );
+  readonly pendingExpenses = computed(() => this.monthExpenses().filter((e) => isPending(e, this.today())));
+  readonly paidExpenses = computed(() => this.monthExpenses().filter((e) => !isPending(e, this.today())));
+
+  readonly totalPaid = computed(() => sum(this.paidExpenses()));
+  readonly totalPending = computed(() => sum(this.pendingExpenses()));
+  readonly totalPlanned = computed(() => this.totalPaid() + this.totalPending());
+
+  /** Quanto sobra hoje, descontando só o que já foi pago. */
+  readonly balance = computed(() => this.salary() - this.totalPaid());
+  /** Quanto vai sobrar no fim do mês, depois de pagar também as contas a vencer. */
+  readonly projectedBalance = computed(() => this.salary() - this.totalPlanned());
+
+  readonly usedPercent = computed(() => (this.salary() > 0 ? (this.totalPlanned() / this.salary()) * 100 : 0));
+  readonly paidPercent = computed(() => (this.salary() > 0 ? (this.totalPaid() / this.salary()) * 100 : 0));
 
   readonly biggestExpense = computed(() =>
     this.monthExpenses().reduce<Expense | null>((max, e) => (!max || e.amount > max.amount ? e : max), null),
   );
 
+  readonly upcoming = computed<UpcomingExpense[]>(() => {
+    const today = parseIsoDate(this.today()).getTime();
+    return this.pendingExpenses()
+      .map((e) => ({ ...e, daysUntil: Math.round((parseIsoDate(e.date).getTime() - today) / DAY_MS) }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  });
+
+  /** Contas a vencer nos próximos dias, em qualquer mês. */
+  readonly dueSoon = computed(() => {
+    const today = this.today();
+    const limitIso = toIsoDate(new Date(parseIsoDate(today).getTime() + DUE_SOON_DAYS * DAY_MS));
+    return this.expenses()
+      .filter((e) => isPending(e, today) && e.date <= limitIso)
+      .sort((a, b) => a.date.localeCompare(b.date));
+  });
+
   readonly dailySeries = computed<DailySeries>(() => {
     const month = this.selectedMonth();
+    const today = this.today();
     const totalDays = daysInMonth(month);
-    const lastDayWithData = this.isCurrentMonth() ? new Date().getDate() : totalDays;
+    const key = this.selectedKey();
+    const currentKey = today.substring(0, 7);
 
-    const spentPerDay = Array<number>(totalDays).fill(0);
+    // Quantos dias do mês já aconteceram: todos (mês passado), até hoje (mês atual) ou nenhum (mês futuro).
+    const elapsedDays = key < currentKey ? totalDays : key > currentKey ? 0 : Number(today.substring(8, 10));
+
+    const paidPerDay = Array<number>(totalDays).fill(0);
+    const pendingPerDay = Array<number>(totalDays).fill(0);
     for (const e of this.monthExpenses()) {
-      spentPerDay[Number(e.date.substring(8, 10)) - 1] += e.amount;
+      const index = Number(e.date.substring(8, 10)) - 1;
+      if (isPending(e, today)) pendingPerDay[index] += e.amount;
+      else paidPerDay[index] += e.amount;
     }
 
     let running = this.salary();
-    const balance = spentPerDay.map((spent, i) => {
-      running -= spent;
-      return i < lastDayWithData ? running : null;
-    });
+    const balance: (number | null)[] = [];
+    const projected: (number | null)[] = [];
+    for (let i = 0; i < totalDays; i++) {
+      running -= paidPerDay[i] + pendingPerDay[i];
+      balance.push(i < elapsedDays ? running : null);
+      projected.push(elapsedDays < totalDays && i >= elapsedDays - 1 ? running : null);
+    }
 
-    const labels = spentPerDay.map((_, i) => String(i + 1).padStart(2, '0'));
-    return { labels, spentPerDay, balance };
+    const labels = paidPerDay.map((_, i) => String(i + 1).padStart(2, '0'));
+    return { labels, paidPerDay, pendingPerDay, balance, projected };
   });
 
   readonly byPaymentType = computed(() => {
-    const total = this.totalSpent();
+    const total = this.totalPlanned();
     return PAYMENT_TYPE_OPTIONS.map((option) => {
-      const amount = this.monthExpenses()
-        .filter((e) => e.paymentType === option.value)
-        .reduce((sum, e) => sum + e.amount, 0);
+      const amount = sum(this.monthExpenses().filter((e) => e.paymentType === option.value));
       return { ...option, amount, percent: total > 0 ? (amount / total) * 100 : 0 };
     }).filter((item) => item.amount > 0);
   });
 
   constructor() {
     effect(() => localStorage.setItem(SALARIES_STORAGE_KEY, JSON.stringify(this.salaries())));
+
+    setInterval(() => {
+      const today = todayIso();
+      if (today !== this.today()) this.today.set(today);
+    }, 60_000);
   }
 
   async load() {
@@ -122,6 +189,7 @@ export class BudgetStore {
     try {
       this.expenses.set(await firstValueFrom(this.api.getAll()));
       this.apiOffline.set(false);
+      this.notifyDueSoon();
     } catch (err) {
       this.apiOffline.set(true);
       this.toast.error(extractApiError(err));
@@ -145,7 +213,7 @@ export class BudgetStore {
   }
 
   goToCurrentMonth() {
-    this.selectedMonth.set(currentMonth());
+    this.selectedMonth.set(monthFromIsoDate(this.today()));
   }
 
   async startEdit(id: number) {
@@ -170,7 +238,9 @@ export class BudgetStore {
         this.toast.success('Despesa atualizada!');
       } else {
         await firstValueFrom(this.api.create(request));
-        this.toast.success('Despesa cadastrada!');
+        this.toast.success(
+          request.status === ExpenseStatus.Pending ? 'Conta a vencer agendada!' : 'Despesa cadastrada!',
+        );
       }
       this.editing.set(null);
       this.selectedMonth.set(monthFromIsoDate(request.date));
@@ -184,6 +254,18 @@ export class BudgetStore {
     }
   }
 
+  async setStatus(expense: Expense, status: ExpenseStatus) {
+    try {
+      await firstValueFrom(this.api.updateStatus(expense.id, status));
+      this.expenses.update((list) => list.map((e) => (e.id === expense.id ? { ...e, status } : e)));
+      this.toast.success(
+        status === ExpenseStatus.Paid ? `"${expense.title}" marcada como paga.` : `"${expense.title}" voltou para a vencer.`,
+      );
+    } catch (err) {
+      this.toast.error(extractApiError(err));
+    }
+  }
+
   async remove(expense: Expense) {
     try {
       await firstValueFrom(this.api.delete(expense.id));
@@ -193,5 +275,20 @@ export class BudgetStore {
     } catch (err) {
       this.toast.error(extractApiError(err));
     }
+  }
+
+  private notifyDueSoon() {
+    if (this.dueSoonNotified) return;
+    this.dueSoonNotified = true;
+
+    const due = this.dueSoon();
+    if (due.length === 0) return;
+    const names = due.map((e) => e.title).join(', ');
+    this.toast.info(
+      due.length === 1
+        ? `Lembrete: "${names}" vence nos próximos ${DUE_SOON_DAYS} dias.`
+        : `Lembrete: ${due.length} contas vencem nos próximos ${DUE_SOON_DAYS} dias (${names}).`,
+      8000,
+    );
   }
 }

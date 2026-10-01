@@ -28,6 +28,9 @@ export class SummaryCards {
     return 'ok';
   });
 
+  protected readonly paidWidth = computed(() => Math.min(this.store.paidPercent(), 100));
+  protected readonly pendingWidth = computed(() => Math.min(this.store.usedPercent(), 100) - this.paidWidth());
+
   protected startSalaryEdit() {
     this.salaryDraft = this.store.salary() || null;
     this.editingSalary.set(true);

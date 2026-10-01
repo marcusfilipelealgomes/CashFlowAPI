@@ -9,6 +9,7 @@ public class Expense
     public string? Description { get; set; }
     public DateTime Date { get; set; }
     public PaymentType PaymentType { get; set; }
+    public ExpenseStatus Status { get; set; }
     public long UserId { get; set; }
 
 }

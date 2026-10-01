@@ -2,7 +2,7 @@
   <canvas #canvas aria-label="Gráfico de comprometimento do salário" role="img"></canvas>
   <div class="donut__center">
     <span class="donut__percent" [class.danger]="overBudget()">{{ percent() | number: '1.0-0' }}%</span>
-    <span class="donut__caption">do salário usado</span>
+    <span class="donut__caption">{{ pending() > 0 ? 'previsto do salário' : 'do salário usado' }}</span>
   </div>
 </div>
 

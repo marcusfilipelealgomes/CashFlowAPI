@@ -38,8 +38,8 @@
   border-radius: var(--radius);
   background: var(--surface);
   border: 1px solid var(--border);
-  backdrop-filter: blur(12px);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.25s ease;
 
   &::after {
     content: '';
@@ -113,6 +113,24 @@
     text-overflow: ellipsis;
   }
 
+  &__hint--wrap {
+    white-space: normal;
+  }
+
+  &__pending {
+    color: var(--warning);
+    font-weight: 600;
+  }
+
+  &__hint strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  &__hint &__negative {
+    color: var(--danger);
+  }
+
   &__cta {
     align-self: flex-start;
     padding: 0;
@@ -142,6 +160,7 @@
 }
 
 .progress {
+  display: flex;
   height: 8px;
   margin-top: 0.35rem;
   border-radius: 999px;
@@ -150,7 +169,6 @@
 
   &__bar {
     height: 100%;
-    border-radius: inherit;
     background: linear-gradient(90deg, var(--accent), var(--primary));
     transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
@@ -161,5 +179,13 @@
 
   &[data-level='danger'] &__bar {
     background: linear-gradient(90deg, #fb923c, var(--danger));
+  }
+
+  &[data-level] &__bar--pending {
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--warning) 0 6px,
+      color-mix(in srgb, var(--warning) 55%, transparent) 6px 12px
+    );
   }
 }
